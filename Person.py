@@ -7,12 +7,14 @@ class Person:
         self.dexterity = random.randint(25, 61)
         self.intelligence = random.randint(25, 61)
         
-        self.hp = 100 + (self.dexterity) 
+        self.hp = 100
         self.max_hp = self.hp
+        self.is_dead = False
         
     def reduce_hp(self, value):
         self.hp -= value
         if (self.hp <= 0):
+            self.is_dead = True
             self.game_over()
             
     def increase_hp(self, value):
@@ -25,4 +27,5 @@ class Person:
         self.increase_hp(value)
     
     def game_over(self):
+        self.is_dead = True
         print("YOU DIED (of course it's a Dark Souls reference!)")
