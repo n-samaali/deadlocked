@@ -21,6 +21,7 @@ from textual.widgets import ProgressBar
 from textual import containers, events, lazy, on, widget
 from textual.app import ComposeResult
 from textual.binding import Binding
+from textual.screen import Screen
 from textual.demo.data import COUNTRIES, DUNE_BIOS, MOVIES, MOVIES_TREE
 from textual.demo.page import PageScreen
 from textual.reactive import reactive, var
@@ -182,26 +183,6 @@ class Logs(containers.VerticalGroup):
     }
     """
 
-    DISPLAY_TITLE = """                                                                          
-     ___       ___       ___       ___       ___                 ___            
-    /\__\     /\  \     /\  \     /\__\     /\  \               /\__\           
-   /:/  /    /::\  \   /::\  \   /:/ _/_   /::\  \             /:| _|_          
-  /:/__/    /::\:\__\ /::\:\__\ /::-"\__\ /\:\:\__\           /::|/\__\         
-  \:\  \    \:\:\/  / \/\::/  / \;:;-",-" \:\:\/__/           \/|::/  /         
-   \:\__\    \:\/  /    /:/  /   |:|  |    \::/  /              |:/  /          
-    \/__/     \/__/     \/__/     \|__|     \/__/               \/__/           
-     ___       ___       ___       ___       ___       ___       ___            
-    /\__\     /\  \     /\  \     /\  \     /\__\     /\  \     /\  \           
-   /:/  /    /::\  \   /::\  \   /::\  \   /:| _|_   /::\  \   /::\  \          
-  /:/__/    /::\:\__\ /:/\:\__\ /::\:\__\ /::|/\__\ /:/\:\__\ /\:\:\__\         
-  \:\  \    \:\:\/  / \:\:\/__/ \:\:\/  / \/|::/  / \:\/:/  / \:\:\/__/         
-   \:\__\    \:\/  /   \::/  /   \:\/  /    |:/  /   \::/  /   \::/  /          
-    \/__/     \/__/     \/__/     \/__/     \/__/     \/__/     \/__/           
-                                                                                
-                                by System33                                    
-    
-    """
-
     YOU_DIED_TITLE = """                                                                      
     ___       ___       ___            ___       ___       ___       ___        
    /\__\     /\  \     /\__\          /\  \     /\  \     /\  \     /\  \       
@@ -218,7 +199,7 @@ class Logs(containers.VerticalGroup):
         yield RichLog(max_lines=10_000, wrap=True, markup=True)
 
     def on_mount(self) -> None:
-        self.write_action_message("default", self.DISPLAY_TITLE)
+        pass
     
     def write_framed_message(self, message: str, box_style: Box = ROUNDED, 
                            title: str = "", style: str = "white") -> None:
@@ -396,7 +377,7 @@ class MainPanel(containers.VerticalGroup) :
             "You turn on the charm, using wit and persuasion to sway the situation in your favor."
         )
         
-class GameApp(App[None]):
+class GameUI(Screen):
     
     DEFAULT_CSS = """
     #side_panel {
@@ -411,15 +392,163 @@ class GameApp(App[None]):
     """
 
     def compose(self) -> ComposeResult:
-        self.app.theme = "gruvbox"
         with containers.HorizontalGroup():
-            
             v_group = containers.Vertical(id="side_panel")
             v_group.border_title = "Player's Deck"
             with v_group :
                 yield SidePanel()
             with containers.VerticalGroup(id="main_panel"):
                 yield MainPanel()
+                
+class StartScreen(Screen):
+    
+    DISPLAY_TITLE = """
+    ___       ___       ___       ___       ___       ___       ___       ___       ___       ___   
+   /\  \     /\  \     /\  \     /\  \     /\__\     /\  \     /\  \     /\__\     /\  \     /\  \  
+  /::\  \   /::\  \   /::\  \   /::\  \   /:/  /    /::\  \   /::\  \   /:/ _/_   /::\  \   /::\  \ 
+ /:/\:\__\ /::\:\__\ /::\:\__\ /:/\:\__\ /:/__/    /:/\:\__\ /:/\:\__\ /::-"\__\ /::\:\__\ /:/\:\__\\
+ \:\/:/  / \:\:\/  / \/\::/  / \:\/:/  / \:\  \    \:\/:/  / \:\ \/__/ \;:;-",-" \:\:\/  / \:\/:/  /
+  \::/  /   \:\/  /    /:/  /   \::/  /   \:\__\    \::/  /   \:\__\    |:|  |    \:\/  /   \::/  / 
+   \/__/     \/__/     \/__/     \/__/     \/__/     \/__/     \/__/     \|__|     \/__/     \/__/  
+                                                                                                    
+                                             by System33
+    """
+    
+    DEFAULT_CSS = """
+    StartScreen {
+        align: center middle;
+        background: $surface;
+        background-tint: #282828;
+    }
+
+    Horizontal {
+        width: 100%;
+        align-horizontal: center;
+    }
+
+    /* Title styling */
+    #title {
+        width: auto;
+        height: auto;
+        border: heavy white 10%;
+        padding: 1;
+        background: $boost;
+        align-horizontal: center;
+        background-tint: #282828;
+    }
+
+    #form-container {
+        width: 60;
+    }
+
+    .form-field {
+        width: 100%;
+    }
+
+    #api-key-input {
+        height: 3;
+        background-tint: #282828;
+    }
+
+    #story-input {
+        height: 8;
+        background-tint: #282828;
+    }
+
+    #button-container {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        margin: 1 0;
+    }
+
+    #start-button {
+        width: 30;
+    }
+    """
+    
+    def compose(self) -> ComposeResult:
+        # Main container that centers everything
+        with containers.Center():
+            with containers.Middle():
+                
+                # Title section - centered
+                with containers.Horizontal():
+                    yield Static(self.DISPLAY_TITLE, id="title")
+                
+                # Form section - centered  
+                with containers.Horizontal():
+                    with containers.Vertical(id="form-container"):
+                        # API Key input
+                        yield Input(
+                            placeholder="Insert your dungeon key (API key) ...",
+                            password=True,
+                            id="api-key-input",
+                            classes="form-field"
+                        )
+                        
+                        # Story prompt input
+                        yield TextArea(
+                            "Insert how you want your story to begin...",
+                            id="story-input",
+                            classes="form-field",
+                        )
+                        
+                        # Button container to center the narrower button
+                        with containers.Horizontal(id="button-container"):
+                            yield Button(
+                                "Begin Adventure!",
+                                variant="success",
+                                id="start-button"
+                            )
+                            
+    def on_mount(self) -> None:
+        # Focus the API key input by default for better UX
+        self.query_one("#api-key-input", Input).focus()
+
+    @on(Button.Pressed, "#start-button")
+    def on_start_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle the start button press"""
+        api_key_input = self.query_one("#api-key-input", Input)
+        story_input = self.query_one("#story-input", TextArea)
+        
+        api_key = api_key_input.value.strip()
+        story_prompt = story_input.text.strip()
+        
+        # Basic validation
+        if not api_key:
+            self.notify("Please enter an API key", severity="error")
+            api_key_input.focus()
+            return
+            
+        if not story_prompt:
+            self.notify("Please enter a story prompt", severity="error")
+            story_input.focus()
+            return
+        
+        # Store the data (you can access these from other screens)
+        self.app.api_key = api_key
+        self.app.story_prompt = story_prompt
+        
+        # Navigate to the game screen
+        self.app.switch_screen("game-ui")  # Changed from push_screen to switch_screen
+        
+        self.notify("Adventure begins!", severity="information")
+        
+                    
+class GameApp(App[None]):
+    
+    def compose(self) -> ComposeResult:
+        self.app.theme = "gruvbox"
+        # Install the screen but don't compose anything yet
+        self.install_screen(StartScreen(), name="start-screen")
+        self.install_screen(GameUI(), name="game-ui")
+        # You need to yield at least one widget, even if it's empty
+        yield Static()  # Or any placeholder widget
+
+    def on_mount(self) -> None:
+        # Push the screen after mounting
+        self.push_screen("start-screen")
 
 if __name__ == "__main__":
     app = GameApp()
