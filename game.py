@@ -28,6 +28,7 @@ class Game:
         if key=="JH":
             gb = self.get_ram_gb()
             if gb <= 8:
+                print("Not enough RAM unfortunately...")
                 self.person.game_over()
         if key=="KH":
             self.person.increase_hp(50)
