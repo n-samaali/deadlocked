@@ -15,10 +15,10 @@ def pioche():
     suit_dictionary = {1:"♥", 2:"♦", 3:"♠", 4:"♣"}
     suit_letters = {1:"H", 2:"D", 3:"S", 4:"C"}
     card_letter = rank_dictionary[rank]+suit_letters[suit]
-    print(card_ascii(rank_dictionary[rank], suit_dictionary[suit]))
+    #print(card_ascii(rank_dictionary[rank], suit_dictionary[suit]))
     if card_letter in description:
         event = description[card_letter]
-    return event
+    return ((card_letter + ":" + event), card_ascii(rank_dictionary[rank], suit_dictionary[suit]))
     
 def card_ascii(rank, suit, width=13, height=7):
     """
@@ -73,3 +73,6 @@ def card_ascii(rank, suit, width=13, height=7):
 # print()
 # print(card_ascii("K", "♦"))
 # #"(♣)"
+
+while (True):
+    print(pioche()[0])

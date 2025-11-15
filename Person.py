@@ -9,10 +9,12 @@ class Person:
         
         self.hp = 100 + (self.dexterity) 
         self.max_hp = self.hp
+        self.is_dead = False
         
     def reduce_hp(self, value):
         self.hp -= value
         if (self.hp <= 0):
+            self.is_dead = True
             self.game_over()
             
     def increase_hp(self, value):
