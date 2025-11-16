@@ -8,6 +8,7 @@ from rich.table import Table
 from rich.traceback import Traceback
 from textual.containers import Horizontal, Vertical
 from textual.binding import Binding
+from textual.reactive import reactive
 
 from rich.panel import Panel
 from rich.box import Box, DOUBLE, ROUNDED, SQUARE, HEAVY
@@ -77,39 +78,40 @@ class ActionButtons(containers.VerticalGroup):
                 id="strength-button",
                 variant="success",
                 disabled=self.app.DISABLE_BUTTONS,
-                #tooltip="",
-                #action="notify('You chose Strength')",
             )
             yield Button(
                 "Dexterity",
                 id="dexterity-button",
                 variant="primary",
                 disabled=self.app.DISABLE_BUTTONS,
-                #tooltip="The primary button style - carry out the core action of the dialog",
-                #action="notify('You chose Dexterity')",
             )
             yield Button(
                 "Intelligence",
                 id="intelligence-button",
                 variant="warning",
                 disabled=self.app.DISABLE_BUTTONS,
-                #tooltip="The warning button style - warn the user that this isn't a typical button",
-                #action="notify('You chose Intelligence')",
             )
             yield Button(
                 "Charisma",
                 id="charisma-button",
                 variant="error",
                 disabled=self.app.DISABLE_BUTTONS,
-                #tooltip="The error button style - clicking is a destructive action",
-                #action="notify('You chose Charisma')",                
             )
-            
-        # with containers.ItemGrid(min_column_width=20, regular=True):
-        #     yield Button("Default", disabled=True)
-        #     yield Button("Primary", variant="primary", disabled=True)
-        #     yield Button("Warning", variant="warning", disabled=True)
-        #     yield Button("Error", variant="error", disabled=True)
+
+    def on_mount(self):
+        # Store references to the buttons
+        self.str_button = self.query_one("#strength-button")
+        self.dex_button = self.query_one("#dexterity-button")
+        self.int_button = self.query_one("#intelligence-button")
+        self.cha_button = self.query_one("#charisma-button")
+
+    def watch_app_DISABLE_BUTTONS(self, value: bool):
+        """Automatically called whenever the app variable changes."""
+        self.str_button.disabled = value
+        self.dex_button.disabled = value
+        self.int_button.disabled = value
+        self.cha_button.disabled = value
+        self.refresh()
         
 class UserStats(containers.VerticalGroup) :
     
@@ -156,7 +158,9 @@ class UserStats(containers.VerticalGroup) :
 
         
     def on_mount(self) -> None:
-        
+        self.update_user_stats()
+
+    def update_user_stats(self) :
         health_init = self.app.game.person.hp
         strength_init = self.app.game.person.strength
         dexterity_init = self.app.game.person.dexterity
@@ -168,6 +172,7 @@ class UserStats(containers.VerticalGroup) :
         self.query_one("#dexterity").update(progress=dexterity_init)
         self.query_one("#intelligence").update(progress=intelligence_init)
         self.query_one("#charisma").update(progress=charisma_init)
+        
 
         
 class Logs(containers.VerticalGroup):
@@ -238,14 +243,23 @@ class Logs(containers.VerticalGroup):
             "dexterity": (ROUNDED, "bold #85a598"), 
             "intelligence": (ROUNDED, "bold #fd8019"),
             "charisma": (ROUNDED, "bold #fa4934"),
-            "default": (ROUNDED, "bold #ebdbb2")
+            "default": (ROUNDED, "bold #ebdbb2"),
+            "options": (ROUNDED, "#595959"),
+            "game-over" : (ROUNDED, "bold #fa4934"),
+            "stat-update" : (ROUNDED, "bold #8ec07c")
         }
         
         box, style = box_styles.get(action_type.lower(), box_styles["default"])
         
         # Custom title for default action type
         if action_type.lower() == "default":
-            title = "DM"
+            title = "DUNGEON MASTER"
+        elif action_type.lower() == "options":
+            title = "CHOOSE YOUR ACTION"
+        elif action_type.lower() == "game-over":
+            title = "GAME OVER"
+        elif action_type.lower() == "stat-update":
+            title = "PLAYER STAT. UPDATE"
         else:
             title = f"{action_type.upper()} ACTION"
         
@@ -255,6 +269,9 @@ class Logs(containers.VerticalGroup):
             title=title,
             style=style
         )
+        
+    def write_death_msg(self) :
+        self.write_action_message("game-over", self.YOU_DIED_TITLE)
         
         
         
@@ -272,8 +289,6 @@ class SidePanel(containers.VerticalGroup) :
     #card_description {
         height: 1fr;
         background-tint: #282828;
-        border: round white 10%;
-        border-title-align: center;
     }
     
     #card_display {
@@ -304,9 +319,14 @@ class SidePanel(containers.VerticalGroup) :
             user_stats.border_title = "Your Stats"
             yield user_stats
             
-            card_description = TextArea("This text area will show card descriptions.", language=None, id="card_description", read_only=True, show_cursor=False)
-            card_description.border_title = "Card Description"
+            # card_description = TextArea("This text area will show card descriptions.", language=None, id="card_description", read_only=True, show_cursor=False)
+            # card_description.border_title = "Card Description"
+            # yield card_description
+            
+            # Use Static widget with Rich alignment instead of TextArea
+            card_description = Static(id="card_description")
             yield card_description
+
             
             # Use Static widget with Rich alignment instead of TextArea
             card_display = Static(id="card_static")
@@ -314,6 +334,7 @@ class SidePanel(containers.VerticalGroup) :
 
     def on_mount(self) -> None:
         self.update_card_display(self.CARD_SAMPLE)
+        self.update_card_description("No description.")
         
     def update_card_display(self, card_ascii) :
         card_display = self.query_one("#card_static", Static)
@@ -337,11 +358,50 @@ class SidePanel(containers.VerticalGroup) :
         card_display.update(panel)
         
     def update_card_description(self, description) :
-        card_description = self.query_one("#card_description")
-        card_description.text = description
-
         
-            
+        card_display = self.query_one("#card_description", Static)
+
+        # Defensive
+        if not isinstance(description, str):
+            description = ""
+
+        # Split only once
+        parts = description.split(":", 1)
+        left = parts[0] if len(parts) >= 1 else ""
+        right = parts[1] if len(parts) == 2 else ""
+
+        # CASE 1 — FORMAT LIKE "8H:"  → action factor only
+        if left and right == "":  
+            # left is like "8H" → numeric part is everything except last char (suit)
+            numeric = left[:-1] if left[-1].isalpha() else left
+            description_output = f"Asserts action scale factor of {numeric} points"
+
+        # CASE 2 — FORMAT LIKE "7H:xyz" → action factor + text
+        elif left and right:
+            numeric = left[:-1] if left[-1].isalpha() else left
+            description_output = f"{right}"
+
+        # CASE 3 — Plain text description (no card code)
+        else:
+            description_output = description or "No description available."
+
+        # Render
+        border_and_title_color = "#454545"
+        card_color = "#ebdbb2"
+
+        styled_card = f"[{card_color}]{description_output.strip()}[/]"
+        centered_card = Align.center(styled_card)
+
+        panel = Panel(
+            centered_card,
+            box=ROUNDED,
+            style=border_and_title_color,
+            title=f"[{border_and_title_color}]Card Description[/]",
+            title_align="center"
+        )
+
+        card_display.update(panel)
+           
 class MainPanel(containers.VerticalGroup) :
     
     DEFAULT_CSS = """
@@ -424,23 +484,26 @@ class MainPanel(containers.VerticalGroup) :
         DM_OUTPUT.write_action_message("default", self.app.current_story)
         
         output_options = f"""
-Select your next move :
 1. Strength : {self.app.current_option["Strength"]}
 2. Dexterity : {self.app.current_option["Dexterity"]}
 3. Intelligence : {self.app.current_option["Intelligence"]}
 4. Charisma : {self.app.current_option["Charisma"]}
         """
         
-        DM_OUTPUT.write_action_message("default", output_options)
-        
+        DM_OUTPUT.write_action_message("options", output_options)
         
         self.app.current_story = story
         self.app.current_option = option
         
+        user_stats = self.app.screen.query_one("#user_stats", UserStats)
+        user_stats.update_user_stats()
+        
         side_panel.update_card_display(new_card[1])
+        
         side_panel.update_card_description(new_card[0])
         
-        
+        self.app.DISABLE_BUTTONS = False
+          
 class GameUI(Screen):
     
     DEFAULT_CSS = """
@@ -474,18 +537,16 @@ class GameUI(Screen):
         DM_OUTPUT.write_action_message("default", self.app.current_story)
         
         output_options = f"""
-Select your next move :
 1. Strength : {self.app.current_option["Strength"]}
 2. Dexterity : {self.app.current_option["Dexterity"]}
 3. Intelligence : {self.app.current_option["Intelligence"]}
 4. Charisma : {self.app.current_option["Charisma"]}
         """
-        
-        DM_OUTPUT.write_action_message("default", output_options)
+
+        DM_OUTPUT.write_action_message("options", output_options)
         
         self.app.DISABLE_BUTTONS = False
         
-                
 class StartScreen(Screen):
     
     DISPLAY_TITLE = """
@@ -553,11 +614,6 @@ class StartScreen(Screen):
     }
     """
     
-    BINDINGS = [
-        ("ctrl+v", "paste", "Paste"),
-    ]
-
-    
     def compose(self) -> ComposeResult:
         # Main container that centers everything
         with containers.Center():
@@ -623,13 +679,14 @@ class StartScreen(Screen):
         
         self.app.game = Game(self.app.api_key)
         
-        # Navigate to the game screen
-        self.app.switch_screen("game-ui")  # Changed from push_screen to switch_screen
-        
         self.notify("Adventure begins!", severity="information")
-        
-                    
+
+        # Navigate to the game scro", outeen
+        self.app.switch_screen("game-ui")  # Changed from push_screen to switch_screen
+           
 class GameApp(App[None]):
+    
+    DISABLE_BUTTONS = reactive(False)
     
     def compose(self) -> ComposeResult:
         self.app.theme = "gruvbox"
