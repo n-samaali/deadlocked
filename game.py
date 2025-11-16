@@ -1,6 +1,6 @@
 import description
 from generator import GenAiHandler
-import Person
+import person
 import subprocess
 import random
 import psutil
@@ -9,7 +9,7 @@ class Game:
     def __init__(self, key):
         self.key = key 
         self.ai_handler = GenAiHandler(self.key)
-        self.person = Person.Person()
+        self.person = person.Person()
         
     def get_ram_gb(self):
         mem_bytes = psutil.virtual_memory().total
