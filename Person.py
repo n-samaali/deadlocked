@@ -8,16 +8,6 @@ class Person:
         self.dexterity = random.randint(25, 61)
         self.intelligence = random.randint(25, 61)
         
-        self.max_strength = self.strength
-        self.max_charisma = self.charisma
-        self.max_dexterity = self.dexterity
-        self.max_intelligence = self.intelligence
-        
-        self.strength = self.strength/self.max_strength*100
-        self.charisma = self.charisma/self.max_charisma*100
-        self.dexterity = self.dexterity/self.max_dexterity*100
-        self.intelligence = self.intelligence/self.max_intelligence*100
-        
         self.hp = 100
         self.max_hp = self.hp
         self.hp = self.hp/self.max_hp*100
