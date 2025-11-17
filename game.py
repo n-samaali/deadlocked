@@ -1,14 +1,13 @@
-import description
-from generator import GenAiHandler
+import card
+from dungeon_master import DungeonMaster
 import person
-import subprocess
 import random
 import psutil
 
 class Game:
     def __init__(self, key):
         self.key = key 
-        self.ai_handler = GenAiHandler(self.key)
+        self.ai_handler = DungeonMaster(self.key)
         self.person = person.Person()
         
     def get_ram_gb(self):
@@ -16,7 +15,7 @@ class Game:
         return mem_bytes / (1024 ** 3)
     
     def draw_card(self):
-        event = description.pioche()
+        event = card.pioche()
         return event
     
     def card_verificator(self, event, choice):
