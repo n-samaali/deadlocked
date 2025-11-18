@@ -1,34 +1,18 @@
-import csv
-import io
-from math import sin
-
 from textual.app import App, ComposeResult
-from rich.syntax import Syntax
-from rich.table import Table
-from rich.traceback import Traceback
-from textual.containers import Horizontal, Vertical
-from textual.binding import Binding
 from textual.reactive import reactive
 
 from rich.panel import Panel
-from rich.box import Box, DOUBLE, ROUNDED, SQUARE, HEAVY
-from rich.text import Text
-from rich.console import RenderableType
+from rich.box import Box, ROUNDED
 from rich.align import Align
 
 from textual.color import Gradient
 from textual.containers import Center, Middle
 from textual.widgets import ProgressBar
 
-from textual import containers, events, lazy, on, widget
+from textual import containers, on
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.screen import Screen
-from textual.demo.data import COUNTRIES, DUNE_BIOS, MOVIES, MOVIES_TREE
-from textual.demo.page import PageScreen
-from textual.reactive import reactive, var
-from textual.suggester import SuggestFromList
-from textual.theme import BUILTIN_THEMES
+from textual.reactive import reactive
 from textual.widgets import (
     Button,
     Checkbox,
@@ -55,7 +39,7 @@ from textual.widgets import (
     Tree,
 )
 
-from game import Game
+from src.game import Game
 
 class ActionButtons(containers.VerticalGroup):
     """Buttons demo."""
@@ -312,7 +296,7 @@ class Logs(containers.VerticalGroup):
     }
     """
 
-    YOU_DIED_TITLE = """                                                                      
+    YOU_DIED_TITLE = r"""                                                                      
     ___       ___       ___            ___       ___       ___       ___        
    /\__\     /\  \     /\__\          /\  \     /\  \     /\  \     /\  \       
   |::L__L   /::\  \   /:/ _/_        /::\  \   _\:\  \   /::\  \   /::\  \      
@@ -429,10 +413,6 @@ class SidePanel(containers.VerticalGroup) :
             user_stats.border_title = "Player Stats"
             yield user_stats
             
-            # card_description = TextArea("This text area will show card descriptions.", language=None, id="card_description", read_only=True, show_cursor=False)
-            # card_description.border_title = "Card Description"
-            # yield card_description
-            
             # Use Static widget with Rich alignment instead of TextArea
             card_description = Static(id="card_description")
             yield card_description
@@ -514,11 +494,11 @@ class MainPanel(containers.VerticalGroup) :
     #dm-response {
         border-title-align: center;
         border: round white 10%;
-        height: 3fr;
+        height: 8fr;
     }
 
     #action-buttons {
-        height: 1fr;
+        height: 3fr;
     }
     """
     
@@ -672,7 +652,7 @@ class GameUI(Screen):
         
 class StartScreen(Screen):
     
-    DISPLAY_TITLE = """
+    DISPLAY_TITLE = r"""
      ___       ___       ___       ___                          
     /\  \     /\  \     /\  \     /\  \       ▄▄▄▄▄             
    /::\  \   /::\  \   /::\  \   /::\  \     ██▛ ▜██            

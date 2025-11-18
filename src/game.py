@@ -1,6 +1,6 @@
-import card
-from dungeon_master import DungeonMaster
-import person
+import src.card as card
+from src.dungeon_master import DungeonMaster
+import src.person as person
 import random
 import psutil
 

@@ -1,31 +1,36 @@
-# DEADLOCKED
+# Deadlocked
 
-Welcome, Travelers, to DEADLOCKED!
+DEADLOCKED is an AI-powered, text-based adventure game inspired by Dungeons & Dragons. You are guided by a soulless Dungeon Master through a unique, dynamically generated story that begins with a prompt of your choice. Navigate the narrative by choosing from four core attributes: Strength, Dexterity, Intelligence, and Charisma. Your choices, combined with a card-drawing mechanic that modifies the outcome of your actions, will shape your journey and alter your character's stats. Manage your Health and attributes carefully. If your Health falls to zero, your adventure ends. The entire experience is played through a stylish, keyboard-driven terminal interface.
 
-## Inspiration
+![Deadlock Text-based User Interface](./docs/images/game-ui.png)
 
-Inspired by the famous Dungeons & Dragons fantasy role-playing game, DEADLOCKED adds chaos to the world-building by allowing cards to interact with the player and letting a soulless Dungeon Master lead the game...
+## Installation
 
-## What it does
+### Prerequisites
 
-Do you want to explore a floating archipelago powered by lost clockwork giants? Or are you feeling more cozy and want to be a farmer in a calm village? Whatever your heart desires, DEADLOCKED is here to deliver!
+- Python 3.8 or higher
+- Gemini API key from Google AI Studio
 
-## How we made it
+### Quick Setup
 
-As we were all familiar with web and model-based development, we really wanted to experiment with a new UI/UX for this, and we stumbled on the concept of a TUI (Text-based User Interface). And so, we used Python to make a fun game where the user relies solely on their keyboard to interact with the entire storyline! To make the game even more interactive, DEADLOCKED is an AI Wrapper where the storyline is decided by the user... or not? All prompts are AI-generated to make each story unique.
+1. Install dependencies:
 
-## Challenges we ran into
+``` bash
+pip install -r requirements.txt
+```
 
-The hardest part was definitely integrating the backend and the frontend. User interactions were buggy; the actions, stats, and cards failed to display or behave appropriately on the game's interface. To ensure consistency, we had to provide the AI with a strict prompt to obtain consistent response bodies that could be parsed and fed back into the AI, allowing it to continue the story. Parsing was an essential but challenging task, as we needed responses to have a common structure to execute the algorithm. 
 
-## Accomplishments we're proud of
+2. Start the TUI:
 
-System33 is especially proud of the UI of the game; the game is fully accessible and interactive solely through the terminal, which was definitely a huge limitation to the design. The color scheme also aligns with the vibe of the original *Dungeons & Dragons* name, which is intentional. On the backend, the AI's output is parsed to output a consistent response, tying the entire game experience together.
+``` bash
+python main.py
+``` 
 
-## What we learned
+## Launch your adventure
 
-We all learned different things throughout this process, whether it was learning how to use CSS, frontend on Python, or how to create fun .md files for some... Developing a TUI game from the ground up definitely required a learning curve for all of us.
+1. Enter the dungeon key when prompted (Gemini API key)
+2. Describe how you want your story to begin
+3. Press "Begin Adventure!" and let the chaos unfold
 
-## What's next for DEADLOCKED?
-
-Incorporating a persistence layer into the game is something we want to explore to keep track of the player's progress over time. In its current iteration, DEADLOCKED is available only in single-player mode. However, we want to allow multiple players to access the same story. The more, the merrier.
+![Deadlock Start Screen No Input](./docs/images/start-screen-no-input.png)
+![Deadlock Start Screen With Input](./docs/images/start-screen-with-input.png)
