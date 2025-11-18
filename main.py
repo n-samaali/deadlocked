@@ -64,39 +64,102 @@ class ActionButtons(containers.VerticalGroup):
     DEFAULT_CLASSES = "column"
     DEFAULT_CSS = """
     ActionButtons {
-        ItemGrid { margin-bottom: 0;}
-        Button { width: 1fr; }
-        /* border: heavy white 20%; */
-        border-title-align: left;
+ 
+        Button {
+            width: 1fr;
+            height: 1fr;
+            text-style: bold;
+            border-title-align: center;
+            content-align-vertical: top;
+        }
+        
+        #strength-button {
+            background-tint: #282828;
+            color: #b7bb26;
+            border: round #b7bb26;
+        }
+        
+        #strength-button:hover {
+            border: heavy #b7bb26;
+        }
+        
+        #dexterity-button {
+            background-tint: #282828;
+            color: #85a598;
+            border: round #85a598;
+        }
+        
+        #dexterity-button:hover {
+            border: heavy #85a598;
+        }
+        
+        #intelligence-button {
+            background-tint: #282828;
+            color: #fd8019;
+            border: round #fd8019;
+        }
+        
+        #intelligence-button:hover {
+            border: heavy #fd8019;
+        }
+        
+        #charisma-button {
+            background-tint: #282828;
+            color: #fa4934;
+            border: round #fa4934;
+        }
+        
+        #charisma-button:hover {
+            border: heavy #fa4934;
+        }
+        
+        
     }
     """
     
     def compose(self) -> ComposeResult:
         with containers.HorizontalGroup():
-            yield Button(
+            StrengthButton = Button(
                 "Strength",
                 id="strength-button",
                 variant="success",
                 disabled=self.app.DISABLE_BUTTONS,
             )
-            yield Button(
+            StrengthButton.border_title = "STRENGTH"
+            
+            DexterityButton = Button(
                 "Dexterity",
                 id="dexterity-button",
                 variant="primary",
                 disabled=self.app.DISABLE_BUTTONS,
             )
-            yield Button(
+            DexterityButton.border_title = "DEXTERITY"
+            
+            IntelligenceButton = Button(
                 "Intelligence",
                 id="intelligence-button",
                 variant="warning",
                 disabled=self.app.DISABLE_BUTTONS,
             )
-            yield Button(
+            IntelligenceButton.border_title = "INTELLIGENCE"
+            
+            CharismaButton = Button(
                 "Charisma",
                 id="charisma-button",
                 variant="error",
                 disabled=self.app.DISABLE_BUTTONS,
             )
+            CharismaButton.border_title = "CHARISMA"
+            
+            StrengthButton.can_focus = False
+            DexterityButton.can_focus = False
+            IntelligenceButton.can_focus = False
+            CharismaButton.can_focus = False
+            
+            yield StrengthButton
+            yield DexterityButton
+            yield IntelligenceButton
+            yield CharismaButton
 
     def on_mount(self):
         # Store references to the buttons
@@ -112,6 +175,13 @@ class ActionButtons(containers.VerticalGroup):
         self.int_button.disabled = value
         self.cha_button.disabled = value
         self.refresh()
+        
+    def update_buttons(self, options : dict) :
+        options_values = list(options.values())
+        self.str_button.label = options_values[0]
+        self.dex_button.label = options_values[1]
+        self.int_button.label = options_values[2]
+        self.cha_button.label = options_values[3]
         
 class UserStats(containers.VerticalGroup) :
     
@@ -285,7 +355,7 @@ class Logs(containers.VerticalGroup):
             "dexterity": (ROUNDED, "bold #85a598"), 
             "intelligence": (ROUNDED, "bold #fd8019"),
             "charisma": (ROUNDED, "bold #fa4934"),
-            "default": (ROUNDED, "bold #ebdbb2"),
+            "default": (ROUNDED, "bold #a0a090"),
             "options": (ROUNDED, "#595959"),
             "game-over" : (ROUNDED, "bold #fa4934"),
             "health" : (ROUNDED, "bold #8ec07c")
@@ -356,7 +426,7 @@ class SidePanel(containers.VerticalGroup) :
         with containers.Container():
             
             user_stats = UserStats(id="user_stats")
-            user_stats.border_title = "Your Stats"
+            user_stats.border_title = "Player Stats"
             yield user_stats
             
             # card_description = TextArea("This text area will show card descriptions.", language=None, id="card_description", read_only=True, show_cursor=False)
@@ -392,7 +462,7 @@ class SidePanel(containers.VerticalGroup) :
             centered_card,
             box=ROUNDED,
             style=border_and_title_color,  # Border now matches title color
-            title=f"[{border_and_title_color}]Drawn Card[/]",  # Title with same color
+            title=f"[{border_and_title_color}]Current Card[/]",  # Title with same color
             title_align="center"
         )
         card_display.update(panel)
@@ -443,10 +513,12 @@ class MainPanel(containers.VerticalGroup) :
     DEFAULT_CSS = """
     #dm-response {
         border-title-align: center;
+        border: round white 10%;
+        height: 3fr;
     }
 
     #action-buttons {
-        border-title-align: center;
+        height: 1fr;
     }
     """
     
@@ -524,17 +596,19 @@ class MainPanel(containers.VerticalGroup) :
         
         DM_OUTPUT.write_action_message("default", self.app.current_story)
         
-        output_options = f"""
-1. Strength : {self.app.current_option["Strength"]}
-2. Dexterity : {self.app.current_option["Dexterity"]}
-3. Intelligence : {self.app.current_option["Intelligence"]}
-4. Charisma : {self.app.current_option["Charisma"]}
-        """
+#         output_options = f"""
+# 1. Strength : {self.app.current_option["Strength"]}
+# 2. Dexterity : {self.app.current_option["Dexterity"]}
+# 3. Intelligence : {self.app.current_option["Intelligence"]}
+# 4. Charisma : {self.app.current_option["Charisma"]}
+#         """
         
-        DM_OUTPUT.write_action_message("options", output_options)
+#         DM_OUTPUT.write_action_message("options", output_options)
+
+        self.query_one("#action-buttons").update_buttons(options)
         
-        self.app.current_story = story
-        self.app.current_option = option
+        # self.app.current_story = story
+        # self.app.current_option = options
         
         user_stats = self.app.screen.query_one("#user_stats", UserStats)
         user_stats.update_user_stats()
@@ -560,7 +634,7 @@ class GameUI(Screen):
     }
     #main_panel {
         width: 5fr; 
-        border: round white 10%;
+        /* border: round white 10%; */
     }
     """
 
@@ -582,14 +656,17 @@ class GameUI(Screen):
         
         DM_OUTPUT.write_action_message("default", self.app.current_story)
         
-        output_options = f"""
-1. Strength : {self.app.current_option["Strength"]}
-2. Dexterity : {self.app.current_option["Dexterity"]}
-3. Intelligence : {self.app.current_option["Intelligence"]}
-4. Charisma : {self.app.current_option["Charisma"]}
-        """
+#         output_options = f"""
+# 1. Strength : {self.app.current_option["Strength"]}
+# 2. Dexterity : {self.app.current_option["Dexterity"]}
+# 3. Intelligence : {self.app.current_option["Intelligence"]}
+# 4. Charisma : {self.app.current_option["Charisma"]}
+#         """
 
-        DM_OUTPUT.write_action_message("options", output_options)
+#         DM_OUTPUT.write_action_message("options", output_options)
+
+        options = self.app.current_option
+        self.app.screen.query_one("#action-buttons").update_buttons(options)
         
         self.app.DISABLE_BUTTONS = False
         
